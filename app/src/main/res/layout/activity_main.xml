@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.example.venetatodorova.chucknorrisjokes.CountdownView
+        android:id="@+id/countdown"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:direction_clockwise="true"
+        app:start_color="@color/colorGreen"
+        app:end_color="@color/colorRed"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        app:size="20dp"/>
+
+    <Button
+        android:id="@+id/start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_countdown"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/countdown"
+        android:onClick="startCountdown"
+        />
+
+</RelativeLayout>
