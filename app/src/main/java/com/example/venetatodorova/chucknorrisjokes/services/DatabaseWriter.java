@@ -15,31 +15,32 @@ import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderDBHelper;
 
 public class DatabaseWriter extends Thread {
 
-    public Handler handler;
     private static FeedReaderDBHelper dbHelper;
     private static Handler uIHandler;
+    private DatabaseWriterListener listener;
 
-    public DatabaseWriter(Context context, Handler uiHandler){
+    public DatabaseWriter(Context context, Handler uiHandler, DatabaseWriterListener listener){
         dbHelper = new FeedReaderDBHelper(context);
         uIHandler = uiHandler;
-    }
-
-    private static class WriterHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            if(getDatabaseSize() >= FeedReaderDBHelper.DATABASE_MAX_SIZE){
-                getLooper().quit();
-                uIHandler.sendEmptyMessage(MainActivity.DATABASE_IS_FULL);
-            }
-            String joke = (String) msg.obj;
-            addToDatabase(joke);
-        }
+        this.listener = listener;
     }
 
     @Override
     public void run() {
         Looper.prepare();
-        handler = new WriterHandler();
+        Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                String joke = (String) msg.obj;
+                addToDatabase(joke);
+                if (getDatabaseSize() >= FeedReaderDBHelper.DATABASE_MAX_SIZE) {
+                    getLooper().quit();
+                    uIHandler.sendEmptyMessage(MainActivity.DATABASE_IS_FULL);
+                    Log.d("Writer", "full database");
+                }
+            }
+        };
+        listener.onDatabaseWriterStart(handler);
         Looper.loop();
     }
 
@@ -49,9 +50,14 @@ public class DatabaseWriter extends Thread {
         values.put(FeedReaderContract.FeedEntry.COLUMN_JOKES, joke);
         database.insert(FeedReaderContract.FeedEntry.TABLE_NAME, null, values);
         Log.d("Added to DB:",joke);
+        Log.d("Database size:",String.valueOf(getDatabaseSize()));
     }
 
     private static long getDatabaseSize(){
         return DatabaseUtils.queryNumEntries(dbHelper.getReadableDatabase(), FeedReaderContract.FeedEntry.TABLE_NAME);
+    }
+
+    public interface DatabaseWriterListener{
+        void onDatabaseWriterStart(Handler handler);
     }
 }

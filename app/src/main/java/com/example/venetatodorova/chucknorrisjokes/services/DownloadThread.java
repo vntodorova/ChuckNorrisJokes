@@ -1,10 +1,8 @@
 package com.example.venetatodorova.chucknorrisjokes.services;
 
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
-
 import com.example.venetatodorova.chucknorrisjokes.views.CountdownView;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,13 +17,12 @@ import java.util.concurrent.TimeUnit;
 
 public class DownloadThread extends Thread {
 
-    public static final String API_URL = "http://api.icndb.com/jokes/random";
+    private static final String API_URL = "http://api.icndb.com/jokes/random";
     private CountdownView countdown;
     private Handler writerHandler;
     private boolean isRunning;
-    private int jokesCount = 10;
 
-    public DownloadThread(Handler writerHandler, CountdownView countdown){
+    public DownloadThread(Handler writerHandler, CountdownView countdown) {
         this.writerHandler = writerHandler;
         this.countdown = countdown;
         this.isRunning = true;
@@ -33,11 +30,8 @@ public class DownloadThread extends Thread {
 
     @Override
     public void run() {
-        while(isRunning){
+        while (isRunning) {
             try {
-                if(jokesCount<=0){
-                    isRunning = false;
-                }
                 Random random = new Random();
                 int timer = random.nextInt(10) + 1;
                 countdown.start(timer);
@@ -46,21 +40,20 @@ public class DownloadThread extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            jokesCount--;
         }
     }
 
-    private void sendJokeToWriter(String joke){
+    private void sendJokeToWriter(String joke) {
         Message msg = Message.obtain();
         msg.obj = joke;
         writerHandler.sendMessage(msg);
-        Log.d("Joke downloaded",joke);
+        Log.d("Joke downloaded", joke);
     }
 
-    private String getRandomJoke(){
+    private String getRandomJoke() {
         String joke = null;
         HttpURLConnection urlConnection = null;
-        try{
+        try {
             URL url = new URL(API_URL);
             urlConnection = (HttpURLConnection) url.openConnection();
             BufferedReader r = new BufferedReader(new InputStreamReader(new BufferedInputStream(urlConnection.getInputStream())));
