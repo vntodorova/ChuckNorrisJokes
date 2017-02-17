@@ -1,4 +1,4 @@
-package com.example.venetatodorova.chucknorrisjokes;
+package com.example.venetatodorova.chucknorrisjokes.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -8,6 +8,8 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
+
+import com.example.venetatodorova.chucknorrisjokes.R;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -21,7 +23,7 @@ public class CountdownView extends View {
     private int startingColor;
     private int endColor;
     private boolean directionClockwise;
-    private double progress; // 0 - 1
+    private double progress;
     private RectF bounds;
     private Paint paint;
     private Timer timer;
@@ -47,10 +49,10 @@ public class CountdownView extends View {
         paint.setStyle(Paint.Style.FILL);
         paint.setColor(startingColor);
         timer = new Timer();
+        setProgress(1);
     }
 
     public void start(int seconds) {
-        progress = 1;
         long numberOfSteps =  TimeUnit.SECONDS.toMillis(seconds) / REFRESH_INTERVAL_IN_MILLIS;
         final double step = 1.0 / numberOfSteps;
         timer.schedule(new TimerTask() {
@@ -61,6 +63,7 @@ public class CountdownView extends View {
                     public void run() {
                         progress -= step;
                         if (progress <= 0) {
+                            setProgress(1);
                             cancel();
                         }
                         setProgress(progress);

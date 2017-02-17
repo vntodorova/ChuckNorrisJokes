@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Chuck Norris Jokes</string>
     <string name="start_countdown">Start countdown</string>
+    <string name="chuck_norris_jokes">Chuck Norris Jokes</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
 </resources>
