@@ -57,7 +57,6 @@ public class DownloadThread extends Thread {
         Message msg = Message.obtain();
         msg.obj = joke;
         writerHandler.sendMessage(msg);
-        Log.d("Joke downloaded", joke);
     }
 
     private String getRandomJoke() {
@@ -83,10 +82,6 @@ public class DownloadThread extends Thread {
             }
         }
         return joke;
-    }
-
-    public void onFullDatabase() {
-        isRunning = false;
     }
 
     private long getDatabaseSize(){

@@ -17,7 +17,7 @@ import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderDBHelper;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class DatabaseReader extends Thread {
+public class DatabaseReader implements Runnable {
 
     private FeedReaderDBHelper dbHelper;
     private String joke;
@@ -32,10 +32,8 @@ public class DatabaseReader extends Thread {
     public void run() {
         joke = readFromDatabase();
         Message msg = Message.obtain();
-        msg.what = MainActivity.SET_NEW_JOKE;
         msg.obj = joke;
         uiHandler.sendMessage(msg);
-        Log.d("Reading joke", joke);
     }
 
     private String readFromDatabase() {
