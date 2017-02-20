@@ -1,87 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
 
     <ImageView
         android:id="@+id/image_view"
         android:layout_width="@dimen/image_width"
         android:layout_height="@dimen/image_height"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/chuck_norris"/>
+        android:src="@drawable/chuck_norris" />
 
     <LinearLayout
         android:id="@+id/countdown_panel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button_panel"
+        android:layout_below="@+id/pause_button"
         android:layout_centerHorizontal="true">
 
         <com.example.venetatodorova.chucknorrisjokes.views.CountdownView
             android:id="@+id/countdown1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:start_color="@color/colorGreen"
-            app:end_color="@color/colorRed"
             android:layout_margin="10dp"
-            app:size="100dp"/>
+            app:end_color="@color/colorRed"
+            app:size="100dp"
+            app:start_color="@color/colorGreen" />
 
         <com.example.venetatodorova.chucknorrisjokes.views.CountdownView
             android:id="@+id/countdown2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:start_color="@color/colorGreen"
-            app:end_color="@color/colorRed"
             android:layout_margin="10dp"
-            app:size="100dp"/>
+            app:end_color="@color/colorRed"
+            app:size="100dp"
+            app:start_color="@color/colorGreen" />
 
         <com.example.venetatodorova.chucknorrisjokes.views.CountdownView
             android:id="@+id/countdown3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:start_color="@color/colorGreen"
-            app:end_color="@color/colorRed"
             android:layout_margin="10dp"
-            app:size="100dp"/>
+            app:end_color="@color/colorRed"
+            app:size="100dp"
+            app:start_color="@color/colorGreen" />
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/button_panel"
+
+    <Button
+        android:id="@+id/pause_button"
         android:layout_width="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/text_view"
         android:layout_height="wrap_content"
-        style="@style/Widget.AppCompat.ButtonBar">
+        android:layout_below="@+id/text_view"
+        android:layout_centerHorizontal="true"
+        android:onClick="pauseJokes"
+        android:text="@string/pause" />
 
-        <Button
-            android:id="@+id/pause_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.ButtonBar"
-            android:text="@string/pause"
-            android:onClick="pauseJokes"/>
-
-        <Button
-            android:id="@+id/resume_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.ButtonBar"
-            android:text="@string/resume"
-            android:onClick="resumeJokes"/>
-
-    </LinearLayout>
 
     <TextView
         android:id="@+id/text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:hint="@string/chuck_norris_jokes"
-        android:textSize="20sp"
-        android:layout_margin="5dp"
+        android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+        android:layout_margin="5dp"
+        android:hint="@string/chuck_norris_jokes"
+        android:textSize="20sp" />
 
 
 </RelativeLayout>

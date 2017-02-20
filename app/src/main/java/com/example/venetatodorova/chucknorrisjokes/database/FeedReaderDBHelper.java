@@ -11,7 +11,7 @@ public class FeedReaderDBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CN.db";
     private static final int DATABASE_VERSION = 1;
-    public static int DATABASE_MAX_SIZE = 100;
+    public static int DATABASE_MAX_SIZE = 200;
 
     public FeedReaderDBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

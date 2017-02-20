@@ -1,8 +1,13 @@
 package com.example.venetatodorova.chucknorrisjokes.services;
 
+import android.content.Context;
+import android.database.DatabaseUtils;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+
+import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderContract;
+import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderDBHelper;
 import com.example.venetatodorova.chucknorrisjokes.views.CountdownView;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,19 +22,24 @@ import java.util.concurrent.TimeUnit;
 
 public class DownloadThread extends Thread {
 
-    private static final String API_URL = "http://api.icndb.com/jokes/random";
+    private static final String API_URL = "http://api.icndb.com/jokes/random?escape=javascript";
     private CountdownView countdown;
     private Handler writerHandler;
     private boolean isRunning;
+    private FeedReaderDBHelper dbHelper;
 
-    public DownloadThread(Handler writerHandler, CountdownView countdown) {
+    public DownloadThread(Handler writerHandler, CountdownView countdown, Context context) {
         this.writerHandler = writerHandler;
         this.countdown = countdown;
         this.isRunning = true;
+        dbHelper = new FeedReaderDBHelper(context);
     }
 
     @Override
     public void run() {
+        if(getDatabaseSize() >= FeedReaderDBHelper.DATABASE_MAX_SIZE){
+            isRunning = false;
+        }
         while (isRunning) {
             try {
                 Random random = new Random();
@@ -77,5 +87,9 @@ public class DownloadThread extends Thread {
 
     public void onFullDatabase() {
         isRunning = false;
+    }
+
+    private long getDatabaseSize(){
+        return DatabaseUtils.queryNumEntries(dbHelper.getReadableDatabase(), FeedReaderContract.FeedEntry.TABLE_NAME);
     }
 }
