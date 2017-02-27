@@ -1,72 +1,43 @@
 package com.example.venetatodorova.chucknorrisjokes.services;
+
 import android.util.Log;
+
+import com.example.venetatodorova.chucknorrisjokes.activities.MainActivity;
+import com.example.venetatodorova.chucknorrisjokes.models.Example;
+import com.example.venetatodorova.chucknorrisjokes.rest.ApiClient;
+import com.example.venetatodorova.chucknorrisjokes.rest.ApiInterface;
 import com.example.venetatodorova.chucknorrisjokes.views.CountdownView;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Random;
+
 import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 public class ApiCaller {
-
-    private static final String API_URL = "http://api.icndb.com/jokes/random?escape=javascript";
     private CountdownView countdown;
     private Disposable disposable;
-    private Consumer<String> consumer;
+    private Function<Example, Observable<Long>> function;
 
-    public ApiCaller(CountdownView countdown, Consumer<String> consumer) {
+    public ApiCaller(CountdownView countdown, Function<Example, Observable<Long>> function) {
         this.countdown = countdown;
-        this.consumer = consumer;
+        this.function = function;
     }
 
-    public void startDownload() {
-        disposable = Observable.interval(6, TimeUnit.SECONDS)
-                .flatMap(ignored -> Observable.fromCallable(this::getRandomJoke))
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeOn(Schedulers.io())
-                .subscribe(consumer, Throwable::printStackTrace);
-    }
-
-    private void startTimer() {
-        Random random = new Random();
-        int timer = random.nextInt(10) + 1;
-        countdown.start(timer);
-    }
-
-    private String getRandomJoke() {
-        String joke = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(API_URL);
-            urlConnection = (HttpURLConnection) url.openConnection();
-            BufferedReader r = new BufferedReader(new InputStreamReader(new BufferedInputStream(urlConnection.getInputStream())));
-            StringBuilder stringBuilder = new StringBuilder();
-            String line;
-            while ((line = r.readLine()) != null) {
-                stringBuilder.append(line).append('\n');
-            }
-            JSONObject jsonObj = new JSONObject(stringBuilder.toString());
-            JSONObject value = jsonObj.getJSONObject("value");
-            joke = value.getString("joke");
-        } catch (IOException | JSONException e) {
-            e.printStackTrace();
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
+    public void startDownload(int randomTime) {
+        if (MainActivity.isDatabaseFull()) {
+            return;
         }
-        Log.i("ApiCaller", "joke downloaded");
-        return joke;
+        ApiInterface apiService = ApiClient.getClient().create(ApiInterface.class);
+        disposable = Observable.interval(0, randomTime, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .flatMap(ignored -> apiService.getJoke())
+                .doOnNext(aLong -> countdown.start(randomTime))
+                .flatMap(function)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(res -> Log.i("onNext", String.valueOf(res)), Throwable::printStackTrace);
     }
 
     public void stopTask() {

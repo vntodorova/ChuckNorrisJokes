@@ -4,36 +4,41 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Messenger;
 import android.util.Log;
 
-import com.example.venetatodorova.chucknorrisjokes.activities.MainActivity;
 import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderContract;
 import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderDBHelper;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-public class DatabaseReader implements Runnable {
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+
+public class DatabaseReader {
 
     private FeedReaderDBHelper dbHelper;
     private String joke;
-    private Handler uiHandler;
+    private DatabaseReaderListener listener;
+    private Disposable disposable;
 
-    public DatabaseReader(Context context, Handler uiHandler) {
+    public DatabaseReader(Context context, DatabaseReaderListener listener) {
         dbHelper = new FeedReaderDBHelper(context);
-        this.uiHandler = uiHandler;
+        this.listener = listener;
     }
 
-    @Override
-    public void run() {
-        joke = readFromDatabase();
-        Message msg = Message.obtain();
-        msg.obj = joke;
-        uiHandler.sendMessage(msg);
+    public void startReading() {
+        disposable = Observable.interval(0, 3, TimeUnit.SECONDS)
+                .flatMap(ignored -> Observable.fromCallable(this::readFromDatabase))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(s -> listener.onJokeRead(s));
+    }
+
+    public void stopReader() {
+        disposable.dispose();
     }
 
     private String readFromDatabase() {
@@ -51,6 +56,7 @@ public class DatabaseReader implements Runnable {
         if (cursor != null) {
             cursor.close();
         }
+        Log.i("DatabaseReader", "read from DB");
         return joke;
     }
 
@@ -61,7 +67,11 @@ public class DatabaseReader implements Runnable {
         return String.valueOf(id);
     }
 
-    private int getDatabaseSize(){
+    private int getDatabaseSize() {
         return (int) DatabaseUtils.queryNumEntries(dbHelper.getReadableDatabase(), FeedReaderContract.FeedEntry.TABLE_NAME);
+    }
+
+    public interface DatabaseReaderListener {
+        void onJokeRead(String joke);
     }
 }

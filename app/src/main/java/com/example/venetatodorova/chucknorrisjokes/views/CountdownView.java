@@ -8,7 +8,9 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
+
 import com.example.venetatodorova.chucknorrisjokes.R;
+
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -51,21 +53,18 @@ public class CountdownView extends View {
     }
 
     public void start(int seconds) {
-        long numberOfSteps =  TimeUnit.SECONDS.toMillis(seconds) / REFRESH_INTERVAL_IN_MILLIS;
+        long numberOfSteps = TimeUnit.SECONDS.toMillis(seconds) / REFRESH_INTERVAL_IN_MILLIS;
         final double step = 1.0 / numberOfSteps;
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                post(new Runnable() {
-                    @Override
-                    public void run() {
-                        progress -= step;
-                        if (progress <= 0) {
-                            setProgress(1);
-                            cancel();
-                        }
-                        setProgress(progress);
+                post(() -> {
+                    progress -= step;
+                    if (progress <= 0) {
+                        setProgress(1);
+                        cancel();
                     }
+                    setProgress(progress);
                 });
             }
         }, 0, REFRESH_INTERVAL_IN_MILLIS);
