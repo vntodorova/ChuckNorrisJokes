@@ -1,13 +1,5 @@
 package com.example.venetatodorova.chucknorrisjokes.services;
-
-import android.content.Context;
-import android.database.DatabaseUtils;
-import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
-
-import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderContract;
-import com.example.venetatodorova.chucknorrisjokes.database.FeedReaderDBHelper;
 import com.example.venetatodorova.chucknorrisjokes.views.CountdownView;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,44 +11,36 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 
-public class DownloadThread extends Thread {
+public class ApiCaller {
 
     private static final String API_URL = "http://api.icndb.com/jokes/random?escape=javascript";
     private CountdownView countdown;
-    private Handler writerHandler;
-    private boolean isRunning;
-    private FeedReaderDBHelper dbHelper;
+    private Disposable disposable;
+    private Consumer<String> consumer;
 
-    public DownloadThread(Handler writerHandler, CountdownView countdown, Context context) {
-        this.writerHandler = writerHandler;
+    public ApiCaller(CountdownView countdown, Consumer<String> consumer) {
         this.countdown = countdown;
-        this.isRunning = true;
-        dbHelper = new FeedReaderDBHelper(context);
+        this.consumer = consumer;
     }
 
-    @Override
-    public void run() {
-        if(getDatabaseSize() >= FeedReaderDBHelper.DATABASE_MAX_SIZE){
-            isRunning = false;
-        }
-        while (isRunning) {
-            try {
-                Random random = new Random();
-                int timer = random.nextInt(10) + 1;
-                countdown.start(timer);
-                sleep(TimeUnit.SECONDS.toMillis(timer));
-                sendJokeToWriter(getRandomJoke());
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+    public void startDownload() {
+        disposable = Observable.interval(6, TimeUnit.SECONDS)
+                .flatMap(ignored -> Observable.fromCallable(this::getRandomJoke))
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
+                .subscribe(consumer, Throwable::printStackTrace);
     }
 
-    private void sendJokeToWriter(String joke) {
-        Message msg = Message.obtain();
-        msg.obj = joke;
-        writerHandler.sendMessage(msg);
+    private void startTimer() {
+        Random random = new Random();
+        int timer = random.nextInt(10) + 1;
+        countdown.start(timer);
     }
 
     private String getRandomJoke() {
@@ -81,10 +65,11 @@ public class DownloadThread extends Thread {
                 urlConnection.disconnect();
             }
         }
+        Log.i("ApiCaller", "joke downloaded");
         return joke;
     }
 
-    private long getDatabaseSize(){
-        return DatabaseUtils.queryNumEntries(dbHelper.getReadableDatabase(), FeedReaderContract.FeedEntry.TABLE_NAME);
+    public void stopTask() {
+        disposable.dispose();
     }
 }
